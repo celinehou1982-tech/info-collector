@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express'
 import cors from 'cors'
+import Parser from 'rss-parser'
 import { scrapeWebPage } from './services/scraper'
 import { generateSummary, generateSimpleSummary, extractSimpleKeyPoints } from './services/ai'
 import { recognizeImage } from './services/ocr'
@@ -20,11 +21,22 @@ const corsOptions = {
 
 // 中间件
 app.use(cors(corsOptions))
-app.use(express.json({ limit: '50mb' })) // 增加请求体大小限制以支持图片上传
-app.use(express.urlencoded({ limit: '50mb', extended: true }))
+app.use(express.json({ limit: '100mb' })) // 增加请求体大小限制以支持图片上传
+app.use(express.urlencoded({ limit: '100mb', extended: true }))
 
 // 挂载路由
 app.use('/api/analytics', analyticsRouter)
+
+// 错误处理中间件 - 处理请求体过大错误
+app.use((err: any, req: Request, res: Response, next: any) => {
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      success: false,
+      error: '上传的文件过大，请确保图片或PDF文件不超过100MB'
+    })
+  }
+  next(err)
+})
 
 // 健康检查
 app.get('/health', (req: Request, res: Response) => {
@@ -113,7 +125,15 @@ app.post('/api/scrape/batch', async (req: Request, res: Response) => {
 // AI摘要生成API
 app.post('/api/ai/summary', async (req: Request, res: Response) => {
   try {
-    const { content, title, provider, apiKey, model } = req.body
+    const { content, title, provider, apiKey, model, baseUrl } = req.body
+
+    console.log('收到AI摘要请求参数:', {
+      title,
+      provider,
+      hasApiKey: !!apiKey,
+      model: model || '(未指定)',
+      baseUrl: baseUrl || '(未设置)'
+    })
 
     if (!content || !title) {
       return res.status(400).json({
@@ -145,7 +165,8 @@ app.post('/api/ai/summary', async (req: Request, res: Response) => {
       title,
       provider,
       apiKey,
-      model
+      model,
+      baseUrl
     })
 
     if (result.success) {
@@ -197,6 +218,70 @@ app.post('/api/ocr', async (req: Request, res: Response) => {
   }
 })
 
+// RSS抓取API
+app.post('/api/rss', async (req: Request, res: Response) => {
+  try {
+    const { url } = req.body
+
+    if (!url) {
+      return res.status(400).json({
+        success: false,
+        error: '缺少RSS URL'
+      })
+    }
+
+    console.log(`收到RSS抓取请求: ${url}`)
+
+    const parser = new Parser({
+      timeout: 15000, // 15秒超时
+      customFields: {
+        item: [
+          ['content:encoded', 'contentEncoded'],
+          ['description', 'description']
+        ]
+      },
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; InfoCollector/1.0; +http://example.com)'
+      }
+    })
+
+    const feed = await parser.parseURL(url)
+
+    console.log(`RSS抓取成功: ${url}, 获取到 ${feed.items.length} 条内容`)
+
+    // 转换为前端需要的格式
+    const items = feed.items.map(item => ({
+      title: item.title || '',
+      content: item.contentEncoded || item.content || item.description || '',
+      link: item.link || '',
+      author: item.creator || item.author || undefined,
+      publishDate: item.pubDate || item.isoDate || undefined,
+      guid: item.guid || item.id || undefined
+    }))
+
+    res.json({
+      success: true,
+      data: {
+        feed: {
+          title: feed.title || '',
+          description: feed.description || '',
+          link: feed.link || ''
+        },
+        items
+      }
+    })
+  } catch (error) {
+    console.error('RSS抓取错误:', error)
+    const errorMessage = error instanceof Error ? error.message : 'RSS抓取失败'
+    console.error('错误详情:', errorMessage)
+
+    res.status(500).json({
+      success: false,
+      error: errorMessage
+    })
+  }
+})
+
 // 启动服务器
 app.listen(PORT, () => {
   console.log(`🚀 服务器运行在 http://localhost:${PORT}`)
@@ -205,6 +290,7 @@ app.listen(PORT, () => {
   console.log(`   - POST http://localhost:${PORT}/api/scrape/batch`)
   console.log(`   - POST http://localhost:${PORT}/api/ai/summary`)
   console.log(`   - POST http://localhost:${PORT}/api/ocr`)
+  console.log(`   - POST http://localhost:${PORT}/api/rss`)
   console.log(`   - GET  http://localhost:${PORT}/api/analytics/admin/summary`)
 })
 

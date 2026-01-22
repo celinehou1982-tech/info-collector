@@ -1,0 +1,17 @@
+node_modules
+.env.local
+.env
+*.log
+.DS_Store
+.vscode
+.idea
+
+# 开发文件
+backend/node_modules
+backend/.env
+
+# 测试文件
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx

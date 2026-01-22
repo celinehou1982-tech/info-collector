@@ -47,10 +47,14 @@ export async function generateSummary(req: AISummaryRequest): Promise<AISummaryR
  * 使用OpenAI生成摘要
  */
 async function generateWithOpenAI(req: AISummaryRequest): Promise<AISummaryResult> {
+  console.log('OpenAI配置 - API Key:', req.apiKey?.substring(0, 10) + '...', 'Base URL:', req.baseUrl || '(未设置)')
+
   const openai = new OpenAI({
     apiKey: req.apiKey,
     ...(req.baseUrl && { baseURL: req.baseUrl })
   })
+
+  console.log('OpenAI客户端已创建，Base URL配置:', req.baseUrl ? 'YES - ' + req.baseUrl : 'NO - 将使用默认OpenAI域名')
 
   const model = req.model || 'gpt-4o-mini'
 
@@ -101,9 +105,31 @@ ${req.content}
     }
   } catch (error) {
     console.error('OpenAI API错误:', error)
+
+    // 处理特定的OpenAI错误
+    let errorMessage = 'OpenAI调用失败'
+
+    if (error && typeof error === 'object') {
+      const err = error as any
+
+      if (err.status === 401) {
+        errorMessage = 'API密钥无效，请检查设置中的API Key是否正确'
+      } else if (err.status === 429) {
+        errorMessage = 'API调用次数超限，请稍后再试'
+      } else if (err.status === 403) {
+        errorMessage = 'API密钥没有访问权限，请检查API Key的权限设置'
+      } else if (err.code === 'insufficient_quota') {
+        errorMessage = 'API账户额度不足，请充值后重试'
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+    } else if (error instanceof Error) {
+      errorMessage = error.message
+    }
+
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'OpenAI调用失败'
+      error: errorMessage
     }
   }
 }
