@@ -37,6 +37,18 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
+  // 只缓存GET请求
+  if (event.request.method !== 'GET') {
+    event.respondWith(fetch(event.request))
+    return
+  }
+
+  // 不缓存API请求
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(fetch(event.request))
+    return
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
