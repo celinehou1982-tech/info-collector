@@ -2,8 +2,8 @@ import axios from 'axios'
 
 // 根据环境选择API地址
 const API_BASE_URL = import.meta.env.PROD
-  ? '/.netlify/functions' // 生产环境使用Netlify Functions
-  : 'http://localhost:3001' // 开发环境使用本地后端
+  ? '/api' // 生产环境使用Vercel API
+  : 'http://localhost:3001/api' // 开发环境使用本地后端
 
 export interface ScrapeResponse {
   success: boolean
@@ -22,9 +22,7 @@ export interface ScrapeResponse {
  */
 export async function scrapeUrl(url: string): Promise<ScrapeResponse> {
   try {
-    const endpoint = import.meta.env.PROD
-      ? `${API_BASE_URL}/scraper` // Netlify Function
-      : `${API_BASE_URL}/api/scrape` // 本地后端
+    const endpoint = `${API_BASE_URL}/scrape`
 
     const response = await axios.post<ScrapeResponse>(
       endpoint,

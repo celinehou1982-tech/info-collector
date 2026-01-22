@@ -5,8 +5,8 @@ import { scrapeUrl } from './scraper'
 import type { Subscription } from '../types'
 
 const API_BASE_URL = import.meta.env.PROD
-  ? '/.netlify/functions'
-  : 'http://localhost:3001'
+  ? '/api'
+  : 'http://localhost:3001/api'
 
 export interface RSSItem {
   title: string
@@ -35,9 +35,7 @@ export interface RSSFetchResponse {
  */
 export async function fetchRSS(url: string): Promise<RSSFetchResponse> {
   try {
-    const endpoint = import.meta.env.PROD
-      ? `${API_BASE_URL}/rss-fetcher`
-      : `${API_BASE_URL}/api/rss` // 本地后端
+    const endpoint = `${API_BASE_URL}/rss`
 
     const response = await axios.post<RSSFetchResponse>(
       endpoint,

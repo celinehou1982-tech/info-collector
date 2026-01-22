@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { AISummaryResponse } from '../types'
 
-// 在生产环境使用 Netlify Functions，开发环境使用本地后端
+// 在生产环境和开发环境都使用相对API路径
 const API_BASE_URL = import.meta.env.PROD
-  ? '/.netlify/functions'
+  ? '/api'
   : 'http://localhost:3001/api'
 
 export interface GenerateSummaryRequest {
@@ -22,13 +22,8 @@ export async function generateAISummary(
   req: GenerateSummaryRequest
 ): Promise<AISummaryResponse> {
   try {
-    // 在生产环境使用 Netlify Function
-    const endpoint = import.meta.env.PROD
-      ? '/.netlify/functions/ai-summary'
-      : `${API_BASE_URL}/ai/summary`
-
     const response = await axios.post<AISummaryResponse>(
-      endpoint,
+      `${API_BASE_URL}/ai/summary`,
       req,
       {
         timeout: 60000 // 60秒超时
