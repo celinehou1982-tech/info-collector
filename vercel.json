@@ -14,8 +14,8 @@
   "functions": {
     "api/**/*.ts": {
       "memory": 1024,
-      "maxDuration": 60,
-      "includeFiles": "backend/src/**"
+      "maxDuration": 60
     }
-  }
+  },
+  "installCommand": "npm install && cd frontend && npm install && cd ../backend && npm install && cd ../api && npm install"
 }

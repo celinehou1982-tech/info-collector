@@ -1,8 +1,28 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { scrapeWebPage } from '../backend/src/services/scraper'
+import axios from 'axios'
+import { JSDOM } from 'jsdom'
+import { Readability } from '@mozilla/readability'
+import TurndownService from 'turndown'
+
+// Initialize Turndown service
+const turndownService = new TurndownService({
+  headingStyle: 'atx',
+  codeBlockStyle: 'fenced'
+})
+
+// Custom rule for images
+turndownService.addRule('images', {
+  filter: 'img',
+  replacement: (content, node: any) => {
+    const alt = node.getAttribute('alt') || ''
+    const src = node.getAttribute('src') || ''
+    const title = node.getAttribute('title') || ''
+    return src ? `![${alt}](${src}${title ? ` "${title}"` : ''})` : ''
+  }
+})
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // 设置CORS
+  // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
@@ -26,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    // 验证URL格式
+    // Validate URL
     try {
       new URL(url)
     } catch (error) {
@@ -38,19 +58,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log(`收到抓取请求: ${url}`)
 
-    // 执行抓取
-    const result = await scrapeWebPage(url)
+    // Fetch webpage
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
+      },
+      timeout: 30000,
+      maxRedirects: 5
+    })
 
-    if (result.success) {
-      return res.json(result)
-    } else {
-      return res.status(500).json(result)
+    const html = response.data
+
+    // Parse with JSDOM and Readability
+    const dom = new JSDOM(html, { url })
+    const reader = new Readability(dom.window.document)
+    const article = reader.parse()
+
+    if (!article) {
+      return res.status(500).json({
+        success: false,
+        error: '无法解析网页内容'
+      })
     }
+
+    // Convert to Markdown
+    const markdown = turndownService.turndown(article.content)
+
+    console.log(`抓取成功: ${article.title}`)
+
+    return res.json({
+      success: true,
+      data: {
+        title: article.title || '无标题',
+        content: markdown,
+        author: article.byline || undefined,
+        excerpt: article.excerpt || undefined
+      }
+    })
   } catch (error) {
-    console.error('API错误:', error)
+    console.error('抓取错误:', error)
     return res.status(500).json({
       success: false,
-      error: '服务器内部错误'
+      error: error instanceof Error ? error.message : '抓取失败'
     })
   }
 }
