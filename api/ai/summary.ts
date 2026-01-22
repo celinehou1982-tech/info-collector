@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { generateSummary, generateSimpleSummary, extractSimpleKeyPoints } from '../backend/src/services/ai'
+import { generateSummary, generateSimpleSummary, extractSimpleKeyPoints } from '../../backend/src/services/ai'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 设置CORS
