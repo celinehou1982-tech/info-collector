@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log(`RSS抓取成功: ${url}, 获取到 ${feed.items.length} 条内容`)
 
     // 转换为前端需要的格式
-    const items = feed.items.map(item => ({
+    const items = feed.items.map((item: any) => ({
       title: item.title || '',
       content: item.contentEncoded || item.content || item.description || '',
       link: item.link || '',
