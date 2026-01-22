@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import Parser from 'rss-parser'
+import RssParser from 'rss-parser'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 设置CORS
@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log(`收到RSS抓取请求: ${url}`)
 
-    const parser = new Parser({
+    const parser = new RssParser({
       timeout: 15000,
       customFields: {
         item: [
