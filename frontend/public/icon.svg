@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 红色背景圆形 -->
+  <circle cx="256" cy="256" r="256" fill="#FF3366"/>
+
+  <!-- 白色搜索图标 -->
+  <g transform="translate(120, 120)">
+    <!-- 放大镜圆环 -->
+    <circle cx="120" cy="120" r="80" fill="none" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
+
+    <!-- 放大镜手柄 -->
+    <line x1="176" y1="176" x2="240" y2="240" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
+
+    <!-- 手柄底部圆角 -->
+    <circle cx="240" cy="240" r="16" fill="#FFFFFF"/>
+  </g>
+</svg>
