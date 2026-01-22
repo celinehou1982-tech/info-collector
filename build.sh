@@ -14,7 +14,7 @@ fi
 # 进入frontend目录并构建
 cd frontend
 echo "Installing dependencies..."
-npm ci --silent || npm install --silent
+npm install
 
 echo "Running build..."
 npm run build
