@@ -1,6 +1,7 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "cd frontend && npm install && npm run build && cd .. && mkdir -p dist && cp -r frontend/dist/* dist/",
   "outputDirectory": "dist",
+  "installCommand": "npm install --prefix api",
   "rewrites": [
     {
       "source": "/api/:path*",
