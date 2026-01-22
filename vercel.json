@@ -1,5 +1,5 @@
 {
-  "buildCommand": "bash build.sh && cd backend && npm install",
+  "buildCommand": "bash build.sh && cd backend && npm install && cd ../api && npm install",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
@@ -14,7 +14,8 @@
   "functions": {
     "api/**/*.ts": {
       "memory": 1024,
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": "backend/src/**"
     }
   }
 }

@@ -11,6 +11,7 @@
     "turndown": "^7.1.2",
     "rss-parser": "^3.13.0",
     "openai": "^4.24.1",
+    "anthropic": "^0.9.1",
     "tesseract.js": "^5.0.4"
   },
   "devDependencies": {
