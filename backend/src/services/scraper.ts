@@ -34,17 +34,13 @@ turndownService.addRule('images', {
 
 /**
  * 抓取网页内容
+ * 使用统一的Readability算法处理所有网页，包括微信公众号
  */
 export async function scrapeWebPage(url: string): Promise<ScrapeResult> {
   try {
     console.log(`开始抓取: ${url}`)
 
-    // 检查是否是微信公众号文章
-    if (url.includes('mp.weixin.qq.com')) {
-      return await scrapeWechatArticle(url)
-    }
-
-    // 检查是否是飞书文档
+    // 检查是否是飞书文档（飞书需要特殊处理）
     if (url.includes('feishu.cn') || url.includes('larksuite.com')) {
       return await scrapeFeishuDoc(url)
     }
@@ -75,10 +71,57 @@ export async function scrapeWebPage(url: string): Promise<ScrapeResult> {
 
     // 使用 JSDOM 解析 HTML
     const dom = new JSDOM(html, { url })
-    const reader = new Readability(dom.window.document)
+    const document = dom.window.document
+
+    // 微信公众号特殊处理：优先使用直接提取，因为Readability会丢失大量内容
+    if (url.includes('mp.weixin.qq.com')) {
+      // 处理懒加载图片
+      const images = document.querySelectorAll('img[data-src]')
+      images.forEach(img => {
+        const dataSrc = img.getAttribute('data-src')
+        if (dataSrc && !img.getAttribute('src')) {
+          img.setAttribute('src', dataSrc)
+        }
+      })
+
+      const title = document.querySelector('#activity-name')?.textContent?.trim() ||
+                   document.querySelector('.rich_media_title')?.textContent?.trim() ||
+                   document.querySelector('title')?.textContent?.trim() ||
+                   '无标题'
+
+      const author = document.querySelector('#js_name')?.textContent?.trim() ||
+                    document.querySelector('.rich_media_meta_text')?.textContent?.trim()
+
+      const contentElement = document.querySelector('#js_content') ||
+                            document.querySelector('.rich_media_content')
+
+      if (contentElement && contentElement.innerHTML.trim().length > 50) {
+        // 清理一些不需要的元素
+        const elementsToRemove = contentElement.querySelectorAll('script, style, mpvoice')
+        elementsToRemove.forEach(el => el.remove())
+
+        const markdown = turndownService.turndown(contentElement.innerHTML)
+
+        console.log(`微信文章抓取成功: ${title}, 内容长度: ${markdown.length}`)
+
+        return {
+          success: true,
+          data: {
+            title,
+            content: markdown,
+            author
+          }
+        }
+      }
+    }
+
+    // 对于非微信网站，使用 Readability 解析文章
+    const reader = new Readability(document)
     const article = reader.parse()
 
-    if (!article) {
+    if (!article || !article.content || article.content.trim().length < 100) {
+      console.log('Readability解析失败或内容过短')
+
       return {
         success: false,
         error: '无法解析网页内容'
@@ -88,7 +131,7 @@ export async function scrapeWebPage(url: string): Promise<ScrapeResult> {
     // 转换为 Markdown
     const markdown = turndownService.turndown(article.content)
 
-    console.log(`抓取成功: ${article.title}`)
+    console.log(`抓取成功: ${article.title}, 内容长度: ${markdown.length}`)
 
     return {
       success: true,
@@ -126,67 +169,6 @@ export async function scrapeWebPage(url: string): Promise<ScrapeResult> {
     return {
       success: false,
       error: error instanceof Error ? error.message : '未知错误'
-    }
-  }
-}
-
-/**
- * 抓取微信公众号文章
- */
-async function scrapeWechatArticle(url: string): Promise<ScrapeResult> {
-  try {
-    console.log('抓取微信公众号文章')
-
-    const response = await axios.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
-        'Accept': 'text/html,application/xhtml+xml'
-      },
-      timeout: 30000
-    })
-
-    const html = response.data
-    const dom = new JSDOM(html)
-    const document = dom.window.document
-
-    // 提取标题
-    const titleElement = document.querySelector('#activity-name, .rich_media_title')
-    const title = titleElement?.textContent?.trim() || '无标题'
-
-    // 提取作者
-    const authorElement = document.querySelector('#js_name, .rich_media_meta_text')
-    const author = authorElement?.textContent?.trim()
-
-    // 提取正文
-    const contentElement = document.querySelector('#js_content, .rich_media_content')
-
-    if (!contentElement) {
-      return {
-        success: false,
-        error: '无法找到文章内容'
-      }
-    }
-
-    // 清理一些微信特有的元素
-    const elementsToRemove = contentElement.querySelectorAll('script, style, .js_video_channel_container')
-    elementsToRemove.forEach(el => el.remove())
-
-    // 转换为 Markdown
-    const markdown = turndownService.turndown(contentElement.innerHTML)
-
-    return {
-      success: true,
-      data: {
-        title,
-        content: markdown,
-        author
-      }
-    }
-  } catch (error) {
-    console.error('抓取微信文章失败:', error)
-    return {
-      success: false,
-      error: '抓取微信公众号文章失败，可能需要在微信中打开'
     }
   }
 }
