@@ -39,6 +39,12 @@ Thumbs.db
 *.tmp
 .cache/
 
+# Test and diagnostic files
+test-*.js
+diagnose-*.js
+*-test.js
+*.test.local.*
+
 # Netlify
 .netlify/
 
@@ -46,3 +52,6 @@ Thumbs.db
 backend/*.traineddata
 .vercel
 .env*.local
+
+# Claude plans (optional, keep if you want to track them)
+# .claude/plans/
