@@ -16,7 +16,9 @@ import {
   Settings as SettingsIcon,
   Search as SearchIcon,
   Summarize as SummarizeIcon,
-  RssFeed as RssIcon
+  RssFeed as RssIcon,
+  Explore as ExploreIcon,
+  ViewList as ListIcon
 } from '@mui/icons-material'
 import CategoryTree from '../CategoryTree/CategoryTree'
 import ContentList from '../ContentList/ContentList'
@@ -27,6 +29,7 @@ import TagCloud from '../Search/TagCloud'
 import SettingsDialog from '../Settings/SettingsDialog'
 import SummaryDialog from '../Summary/SummaryDialog'
 import SubscriptionDialog from '../Subscription/SubscriptionDialog'
+import DiscoverFeed from '../Discover/DiscoverFeed'
 import { useContentStore } from '../../store/contentStore'
 
 const DRAWER_WIDTH = 280
@@ -41,6 +44,7 @@ export default function MainLayout() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [subscriptionOpen, setSubscriptionOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'library' | 'discover'>('library')
   const { selectedContent } = useContentStore()
 
   const handleDrawerToggle = () => {
@@ -83,6 +87,13 @@ export default function MainLayout() {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Catch4You
           </Typography>
+          <IconButton
+            color="inherit"
+            onClick={() => setViewMode(viewMode === 'library' ? 'discover' : 'library')}
+            title={viewMode === 'library' ? '发现' : '我的库'}
+          >
+            {viewMode === 'library' ? <ExploreIcon /> : <ListIcon />}
+          </IconButton>
           <IconButton color="inherit" onClick={() => setInputPanelOpen(true)}>
             <AddIcon />
           </IconButton>
@@ -154,34 +165,34 @@ export default function MainLayout() {
 
         {/* 内容列表和详情 */}
         <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
-          {/* 内容列表 */}
+          {/* 内容列表或推荐广场 */}
           <Box
             sx={{
-              width: selectedContent && !isMobile ? '40%' : '100%',
-              borderRight: selectedContent && !isMobile ? 1 : 0,
+              width: selectedContent && !isMobile && viewMode === 'library' ? '40%' : '100%',
+              borderRight: selectedContent && !isMobile && viewMode === 'library' ? 1 : 0,
               borderColor: 'divider',
               overflow: 'auto',
             }}
           >
-            {/* 搜索和标签云 */}
-            {searchOpen && (
+            {/* 搜索和标签云 - 仅在我的库模式显示 */}
+            {searchOpen && viewMode === 'library' && (
               <Box sx={{ p: 2 }}>
                 <SearchPanel />
                 <TagCloud />
               </Box>
             )}
-            <ContentList />
+            {viewMode === 'library' ? <ContentList /> : <DiscoverFeed />}
           </Box>
 
-          {/* 内容详情 */}
-          {selectedContent && !isMobile && (
+          {/* 内容详情 - 仅在我的库模式显示 */}
+          {selectedContent && !isMobile && viewMode === 'library' && (
             <Box sx={{ width: '60%', overflow: 'auto' }}>
               <ContentDetail />
             </Box>
           )}
 
-          {/* 移动端全屏详情 */}
-          {selectedContent && isMobile && (
+          {/* 移动端全屏详情 - 仅在我的库模式显示 */}
+          {selectedContent && isMobile && viewMode === 'library' && (
             <Box
               sx={{
                 position: 'fixed',

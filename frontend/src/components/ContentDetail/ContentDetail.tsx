@@ -16,18 +16,21 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   AutoAwesome as AIIcon,
-  PictureAsPdf as PdfIcon
+  PictureAsPdf as PdfIcon,
+  Share as ShareIcon
 } from '@mui/icons-material'
 import ReactMarkdown from 'react-markdown'
 import { useContentStore } from '../../store/contentStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { generateAISummary } from '../../services/ai'
+import { createShare } from '../../services/share'
 import ContentEditDialog from './ContentEditDialog'
 
 export default function ContentDetail() {
   const { selectedContent, selectContent, deleteContent, updateContent } = useContentStore()
   const { settings } = useSettingsStore()
   const [generating, setGenerating] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const [error, setError] = useState('')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
 
@@ -88,6 +91,33 @@ export default function ContentDetail() {
       setError(errorMessage)
     } finally {
       setGenerating(false)
+    }
+  }
+
+  const handleShareToCommunity = async () => {
+    setSharing(true)
+    setError('')
+
+    try {
+      // 获取用户名（可以从设置或localStorage读取，这里默认使用匿名）
+      const userName = localStorage.getItem('userName') || '匿名用户'
+
+      const result = await createShare(selectedContent, userName)
+
+      if (result.success && result.data) {
+        // 复制分享链接到剪贴板
+        await navigator.clipboard.writeText(result.data.shareUrl)
+        setError('')
+        alert(`分享成功！\n分享链接已复制到剪贴板：\n${result.data.shareUrl}`)
+      } else {
+        setError(result.error || '分享失败')
+      }
+    } catch (err) {
+      console.error('分享失败:', err)
+      const errorMessage = err instanceof Error ? err.message : '分享时发生错误'
+      setError(errorMessage)
+    } finally {
+      setSharing(false)
     }
   }
 
@@ -160,6 +190,20 @@ export default function ContentDetail() {
             {error}
           </Alert>
         )}
+
+        {/* 推荐到社区按钮 */}
+        <Box sx={{ mb: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={sharing ? <CircularProgress size={16} /> : <ShareIcon />}
+            onClick={handleShareToCommunity}
+            disabled={sharing}
+            fullWidth
+          >
+            {sharing ? '分享中...' : '推荐到社区'}
+          </Button>
+        </Box>
 
         {/* 生成摘要按钮 */}
         {!selectedContent.summary && !selectedContent.keyPoints && (
