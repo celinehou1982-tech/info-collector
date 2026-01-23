@@ -100,15 +100,22 @@ export async function scrapeWebPage(url: string): Promise<ScrapeResult> {
         const elementsToRemove = contentElement.querySelectorAll('script, style, mpvoice')
         elementsToRemove.forEach(el => el.remove())
 
-        const markdown = turndownService.turndown(contentElement.innerHTML)
+        // 只提取纯文本内容（不要Markdown格式）
+        const plainText = contentElement.textContent?.trim() || ''
 
-        console.log(`微信文章抓取成功: ${title}, 内容长度: ${markdown.length}`)
+        // 清理多余的空白字符
+        const cleanText = plainText
+          .replace(/\n\s*\n\s*\n/g, '\n\n')  // 多个连续换行变成两个
+          .replace(/[ \t]+/g, ' ')            // 多个连续空格变成一个
+          .trim()
+
+        console.log(`微信文章抓取成功: ${title}, 内容长度: ${cleanText.length}`)
 
         return {
           success: true,
           data: {
             title,
-            content: markdown,
+            content: cleanText,
             author
           }
         }
