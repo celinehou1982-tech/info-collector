@@ -1,6 +1,17 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { kv } from '@vercel/kv'
-import { nanoid } from 'nanoid'
+import { randomBytes } from 'crypto'
+
+// 生成短ID的函数（替代nanoid）
+function generateId(length: number = 10): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  const bytes = randomBytes(length)
+  let result = ''
+  for (let i = 0; i < length; i++) {
+    result += chars[bytes[i] % chars.length]
+  }
+  return result
+}
 
 interface ShareRequest {
   content: {
@@ -44,7 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // 生成唯一ID
-    const shareId = nanoid(10)
+    const shareId = generateId(10)
     const now = Date.now()
     const ttl = expiresIn || 30 * 24 * 60 * 60 // 默认30天
 
