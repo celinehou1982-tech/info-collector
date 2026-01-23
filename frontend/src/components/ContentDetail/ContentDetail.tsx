@@ -9,7 +9,12 @@ import {
   Divider,
   Button,
   CircularProgress,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
 } from '@mui/material'
 import {
   Close as CloseIcon,
@@ -33,6 +38,8 @@ export default function ContentDetail() {
   const [sharing, setSharing] = useState(false)
   const [error, setError] = useState('')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [shareUrl, setShareUrl] = useState('')
 
   if (!selectedContent) {
     return null
@@ -105,10 +112,9 @@ export default function ContentDetail() {
       const result = await createShare(selectedContent, userName)
 
       if (result.success && result.data) {
-        // 复制分享链接到剪贴板
-        await navigator.clipboard.writeText(result.data.shareUrl)
+        setShareUrl(result.data.shareUrl)
+        setShareDialogOpen(true)
         setError('')
-        alert(`分享成功！\n分享链接已复制到剪贴板：\n${result.data.shareUrl}`)
       } else {
         setError(result.error || '分享失败')
       }
@@ -118,6 +124,21 @@ export default function ContentDetail() {
       setError(errorMessage)
     } finally {
       setSharing(false)
+    }
+  }
+
+  const handleCopyShareUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      alert('链接已复制到剪贴板！')
+    } catch (err) {
+      console.error('复制失败:', err)
+      // 降级方案：选中文本让用户手动复制
+      const textField = document.querySelector('#share-url-input') as HTMLInputElement
+      if (textField) {
+        textField.select()
+        alert('请手动复制分享链接（Ctrl+C 或 Cmd+C）')
+      }
     }
   }
 
@@ -359,6 +380,42 @@ export default function ContentDetail() {
         onClose={() => setEditDialogOpen(false)}
         onSave={handleSaveEdit}
       />
+
+      {/* 分享链接对话框 */}
+      <Dialog
+        open={shareDialogOpen}
+        onClose={() => setShareDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>分享成功</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            内容已成功分享到社区！复制下方链接分享给其他人：
+          </Typography>
+          <TextField
+            id="share-url-input"
+            fullWidth
+            value={shareUrl}
+            variant="outlined"
+            InputProps={{
+              readOnly: true,
+            }}
+            onClick={(e) => {
+              const input = e.target as HTMLInputElement
+              input.select()
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShareDialogOpen(false)}>
+            关闭
+          </Button>
+          <Button onClick={handleCopyShareUrl} variant="contained">
+            复制链接
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
