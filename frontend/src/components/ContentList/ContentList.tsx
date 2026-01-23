@@ -215,7 +215,7 @@ export default function ContentList() {
       {imageContents.length > 0 && (
         <Grid container spacing={2} sx={{ mb: 2 }}>
           {imageContents.map((content) => (
-            <Grid item key={content.id}>
+            <Grid key={content.id}>
               <Card
                 sx={{
                   cursor: 'grab',
