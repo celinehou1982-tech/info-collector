@@ -35,7 +35,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    const shareData = JSON.parse(shareDataStr)
+    // KV可能返回字符串或对象，需要处理两种情况
+    let shareData
+    if (typeof shareDataStr === 'string') {
+      shareData = JSON.parse(shareDataStr)
+    } else {
+      shareData = shareDataStr
+    }
 
     // 增加点赞数
     shareData.likeCount += 1

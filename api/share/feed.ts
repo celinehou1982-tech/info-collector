@@ -43,7 +43,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const shareDataStr = await kv.get<string>(`share:${id}`)
       if (shareDataStr) {
         try {
-          items.push(JSON.parse(shareDataStr))
+          // KV可能返回字符串或对象
+          if (typeof shareDataStr === 'string') {
+            items.push(JSON.parse(shareDataStr))
+          } else {
+            items.push(shareDataStr)
+          }
         } catch (e) {
           console.error(`Failed to parse share data for ${id}:`, e)
         }
