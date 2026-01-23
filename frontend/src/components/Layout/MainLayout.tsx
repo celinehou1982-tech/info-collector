@@ -8,7 +8,12 @@ import {
   Drawer,
   Fab,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Divider
 } from '@mui/material'
 import {
   Menu as MenuIcon,
@@ -18,7 +23,8 @@ import {
   Summarize as SummarizeIcon,
   RssFeed as RssIcon,
   Explore as ExploreIcon,
-  ViewList as ListIcon
+  ViewList as ListIcon,
+  MoreVert as MoreVertIcon
 } from '@mui/icons-material'
 import CategoryTree from '../CategoryTree/CategoryTree'
 import ContentList from '../ContentList/ContentList'
@@ -45,10 +51,24 @@ export default function MainLayout() {
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [subscriptionOpen, setSubscriptionOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'library' | 'discover'>('library')
+  const [moreMenuAnchor, setMoreMenuAnchor] = useState<null | HTMLElement>(null)
   const { selectedContent } = useContentStore()
 
   const handleDrawerToggle = () => {
     setMobileDrawerOpen(!mobileDrawerOpen)
+  }
+
+  const handleMoreMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMoreMenuAnchor(event.currentTarget)
+  }
+
+  const handleMoreMenuClose = () => {
+    setMoreMenuAnchor(null)
+  }
+
+  const handleMenuAction = (action: () => void) => {
+    action()
+    handleMoreMenuClose()
   }
 
   const drawerContent = (
@@ -87,28 +107,44 @@ export default function MainLayout() {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Catch4You
           </Typography>
-          <IconButton color="inherit" onClick={() => setInputPanelOpen(true)} title="新增内容">
-            <AddIcon />
-          </IconButton>
-          <IconButton
-            color="inherit"
-            onClick={() => setViewMode(viewMode === 'library' ? 'discover' : 'library')}
-            title={viewMode === 'library' ? '社区分享' : '我的库'}
-          >
-            {viewMode === 'library' ? <ExploreIcon /> : <ListIcon />}
-          </IconButton>
-          <IconButton color="inherit" onClick={() => setSubscriptionOpen(true)} title="RSS订阅">
-            <RssIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={() => setSummaryOpen(true)} title="汇总生成">
-            <SummarizeIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={() => setSearchOpen(!searchOpen)} title="搜索">
-            <SearchIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={() => setSettingsOpen(true)} title="设置">
-            <SettingsIcon />
-          </IconButton>
+
+          {/* 移动端：只显示新增和更多菜单 */}
+          {isMobile ? (
+            <>
+              <IconButton color="inherit" onClick={() => setInputPanelOpen(true)} title="新增内容">
+                <AddIcon />
+              </IconButton>
+              <IconButton color="inherit" onClick={handleMoreMenuOpen} title="更多">
+                <MoreVertIcon />
+              </IconButton>
+            </>
+          ) : (
+            /* 桌面端：显示所有按钮 */
+            <>
+              <IconButton color="inherit" onClick={() => setInputPanelOpen(true)} title="新增内容">
+                <AddIcon />
+              </IconButton>
+              <IconButton
+                color="inherit"
+                onClick={() => setViewMode(viewMode === 'library' ? 'discover' : 'library')}
+                title={viewMode === 'library' ? '社区分享' : '我的库'}
+              >
+                {viewMode === 'library' ? <ExploreIcon /> : <ListIcon />}
+              </IconButton>
+              <IconButton color="inherit" onClick={() => setSubscriptionOpen(true)} title="RSS订阅">
+                <RssIcon />
+              </IconButton>
+              <IconButton color="inherit" onClick={() => setSummaryOpen(true)} title="汇总生成">
+                <SummarizeIcon />
+              </IconButton>
+              <IconButton color="inherit" onClick={() => setSearchOpen(!searchOpen)} title="搜索">
+                <SearchIcon />
+              </IconButton>
+              <IconButton color="inherit" onClick={() => setSettingsOpen(true)} title="设置">
+                <SettingsIcon />
+              </IconButton>
+            </>
+          )}
         </Toolbar>
       </AppBar>
 
@@ -248,6 +284,53 @@ export default function MainLayout() {
         open={subscriptionOpen}
         onClose={() => setSubscriptionOpen(false)}
       />
+
+      {/* 移动端更多菜单 */}
+      <Menu
+        anchorEl={moreMenuAnchor}
+        open={Boolean(moreMenuAnchor)}
+        onClose={handleMoreMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem onClick={() => handleMenuAction(() => setViewMode(viewMode === 'library' ? 'discover' : 'library'))}>
+          <ListItemIcon>
+            {viewMode === 'library' ? <ExploreIcon fontSize="small" /> : <ListIcon fontSize="small" />}
+          </ListItemIcon>
+          <ListItemText>{viewMode === 'library' ? '社区分享' : '我的库'}</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => handleMenuAction(() => setSubscriptionOpen(true))}>
+          <ListItemIcon>
+            <RssIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>RSS订阅</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => handleMenuAction(() => setSummaryOpen(true))}>
+          <ListItemIcon>
+            <SummarizeIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>汇总生成</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => handleMenuAction(() => setSearchOpen(!searchOpen))}>
+          <ListItemIcon>
+            <SearchIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>搜索</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => handleMenuAction(() => setSettingsOpen(true))}>
+          <ListItemIcon>
+            <SettingsIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>设置</ListItemText>
+        </MenuItem>
+      </Menu>
     </Box>
   )
 }
