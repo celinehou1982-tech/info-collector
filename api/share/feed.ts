@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const offset = (page - 1) * limit
 
     // 从有序集合获取最新的分享ID（按时间倒序）
-    const shareIds = await kv.zrange('share:feed', offset + limit - 1, offset, { rev: true })
+    const shareIds = await kv.zrange('share:feed', offset, offset + limit - 1, { rev: true })
 
     if (!shareIds || shareIds.length === 0) {
       return res.json({
