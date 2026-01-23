@@ -87,26 +87,26 @@ export default function MainLayout() {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Catch4You
           </Typography>
+          <IconButton color="inherit" onClick={() => setInputPanelOpen(true)} title="新增内容">
+            <AddIcon />
+          </IconButton>
           <IconButton
             color="inherit"
             onClick={() => setViewMode(viewMode === 'library' ? 'discover' : 'library')}
-            title={viewMode === 'library' ? '发现' : '我的库'}
+            title={viewMode === 'library' ? '社区分享' : '我的库'}
           >
             {viewMode === 'library' ? <ExploreIcon /> : <ListIcon />}
           </IconButton>
-          <IconButton color="inherit" onClick={() => setInputPanelOpen(true)}>
-            <AddIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={() => setSubscriptionOpen(true)} title="订阅管理">
+          <IconButton color="inherit" onClick={() => setSubscriptionOpen(true)} title="RSS订阅">
             <RssIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={() => setSummaryOpen(true)}>
+          <IconButton color="inherit" onClick={() => setSummaryOpen(true)} title="汇总生成">
             <SummarizeIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={() => setSearchOpen(!searchOpen)}>
+          <IconButton color="inherit" onClick={() => setSearchOpen(!searchOpen)} title="搜索">
             <SearchIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={() => setSettingsOpen(true)}>
+          <IconButton color="inherit" onClick={() => setSettingsOpen(true)} title="设置">
             <SettingsIcon />
           </IconButton>
         </Toolbar>
