@@ -108,7 +108,7 @@ export default function DiscoverFeed() {
       await addContent({
         ...share.content,
         // 添加来源标记
-        tags: [...share.content.tags, `来自@${share.userName}`]
+        tags: [...(share.content.tags || []), `来自@${share.userName}`]
       })
       setSnackbar({
         open: true,
@@ -200,11 +200,13 @@ export default function DiscoverFeed() {
               )}
 
               {/* 标签 */}
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-                {share.content.tags.map((tag, index) => (
-                  <Chip key={index} label={tag} size="small" />
-                ))}
-              </Box>
+              {share.content.tags && share.content.tags.length > 0 && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+                  {share.content.tags.map((tag, index) => (
+                    <Chip key={index} label={tag} size="small" />
+                  ))}
+                </Box>
+              )}
 
               {/* 操作按钮 */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
