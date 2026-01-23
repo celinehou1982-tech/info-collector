@@ -218,11 +218,11 @@ export const useContentStore = create<ContentState>((set, get) => ({
     // 目录筛选 - 特殊处理
     if (selectedCategoryId === 'uncategorized') {
       // 未分类：没有任何目录ID的内容
-      filtered = filtered.filter(content => content.categoryIds.length === 0)
+      filtered = filtered.filter(content => !content.categoryIds || content.categoryIds.length === 0)
     } else if (selectedCategoryId) {
       // 特定目录
       filtered = filtered.filter(content =>
-        content.categoryIds.includes(selectedCategoryId)
+        content.categoryIds && content.categoryIds.includes(selectedCategoryId)
       )
     }
     // selectedCategoryId === null 时显示全部，不过滤
@@ -233,14 +233,14 @@ export const useContentStore = create<ContentState>((set, get) => ({
       filtered = filtered.filter(content =>
         content.title.toLowerCase().includes(searchLower) ||
         content.content.toLowerCase().includes(searchLower) ||
-        content.tags.some(tag => tag.toLowerCase().includes(searchLower))
+        (content.tags && content.tags.some(tag => tag.toLowerCase().includes(searchLower)))
       )
     }
 
     // 标签过滤
     if (filters.tags.length > 0) {
       filtered = filtered.filter(content =>
-        filters.tags.every(tag => content.tags.includes(tag))
+        content.tags && filters.tags.every(tag => content.tags.includes(tag))
       )
     }
 
