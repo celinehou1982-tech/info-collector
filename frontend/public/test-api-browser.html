@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>API Test - Catch4You</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <h1>Catch4You API 测试工具</h1>
+
+    <div class="test-section">
+        <h2>测试 1: 检查 API 连接</h2>
+        <button onclick="testConnection()">测试连接</button>
+        <div id="connection-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试 2: 测试抓取 API</h2>
+        <input type="text" id="test-url" style="width: 100%; padding: 8px; margin: 10px 0;"
+               value="https://mp.weixin.qq.com/s/pDnMUkkmQIoUKPqbRAFPUw"
+               placeholder="输入要抓取的 URL">
+        <button onclick="testScrape()">测试抓取</button>
+        <div id="scrape-result" class="result"></div>
+    </div>
+
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            resultDiv.textContent = '正在测试连接...';
+            resultDiv.className = 'result';
+
+            try {
+                // Test 1: Check if we can reach the API endpoint
+                const response = await fetch('/api/scrape', {
+                    method: 'OPTIONS'
+                });
+
+                resultDiv.textContent = `连接成功！\nHTTP 状态: ${response.status}\n响应头:\n${JSON.stringify(Object.fromEntries(response.headers), null, 2)}`;
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.textContent = `连接失败！\n错误: ${error.message}\n错误类型: ${error.name}`;
+                resultDiv.className = 'result error';
+                console.error('Connection test error:', error);
+            }
+        }
+
+        async function testScrape() {
+            const resultDiv = document.getElementById('scrape-result');
+            const urlInput = document.getElementById('test-url');
+            const testUrl = urlInput.value.trim();
+
+            if (!testUrl) {
+                resultDiv.textContent = '请输入要测试的 URL';
+                resultDiv.className = 'result error';
+                return;
+            }
+
+            resultDiv.textContent = '正在抓取...';
+            resultDiv.className = 'result';
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch('/api/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: testUrl })
+                });
+
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.textContent = `抓取成功！\n耗时: ${duration}ms\n\n标题: ${data.data.title}\n作者: ${data.data.author || '无'}\n内容长度: ${data.data.content.length} 字符\n\n内容预览（前500字）:\n${data.data.content.substring(0, 500)}...\n\n完整响应:\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `抓取失败！\n耗时: ${duration}ms\n错误: ${data.error}\n\n完整响应:\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `请求失败！\n错误: ${error.message}\n错误类型: ${error.name}\n\n这通常意味着:\n1. 网络连接问题\n2. API 端点不可达\n3. CORS 配置问题\n\n请检查浏览器开发者工具的 Network 标签查看详细错误`;
+                resultDiv.className = 'result error';
+                console.error('Scrape test error:', error);
+            }
+        }
+
+        // 自动运行连接测试
+        window.addEventListener('load', () => {
+            testConnection();
+        });
+    </script>
+</body>
+</html>
