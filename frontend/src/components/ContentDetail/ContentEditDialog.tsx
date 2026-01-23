@@ -36,10 +36,10 @@ export default function ContentEditDialog({ open, content, onClose, onSave }: Co
     if (content && open) {
       setTitle(content.title)
       setContentText(content.content)
-      setTags(content.tags)
+      setTags(content.tags || [])
 
       // 根据 categoryIds 找到对应的 Category 对象
-      const selectedCats = categories.filter(cat => content.categoryIds.includes(cat.id))
+      const selectedCats = categories.filter(cat => content.categoryIds && content.categoryIds.includes(cat.id))
       setSelectedCategories(selectedCats)
     }
   }, [content, open, categories])
