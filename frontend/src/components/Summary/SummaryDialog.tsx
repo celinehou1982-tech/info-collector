@@ -64,14 +64,14 @@ export default function SummaryDialog({ open, onClose }: SummaryDialogProps) {
       // 按目录过滤
       if (selectedCategoryIds.length > 0) {
         filtered = filtered.filter(c =>
-          c.categoryIds.some(catId => selectedCategoryIds.includes(catId))
+          c.categoryIds && c.categoryIds.some(catId => selectedCategoryIds.includes(catId))
         )
       }
 
       // 按标签过滤
       if (selectedTags.length > 0) {
         filtered = filtered.filter(c =>
-          selectedTags.every(tag => c.tags.includes(tag))
+          c.tags && selectedTags.every(tag => c.tags.includes(tag))
         )
       }
 

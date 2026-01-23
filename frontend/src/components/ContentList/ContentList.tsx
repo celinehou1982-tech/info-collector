@@ -54,7 +54,7 @@ export default function ContentList() {
 
   // 如果选中了目录，进一步过滤
   const displayContents = selectedCategoryId
-    ? filteredContents.filter(c => c.categoryIds.includes(selectedCategoryId))
+    ? filteredContents.filter(c => c.categoryIds && c.categoryIds.includes(selectedCategoryId))
     : filteredContents
 
   // 分离图片类型和非图片类型的内容

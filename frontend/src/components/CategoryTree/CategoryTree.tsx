@@ -166,9 +166,10 @@ export default function CategoryTree() {
         const content = contents.find(c => c.id === id)
         if (content) {
           // 添加目录ID到内容的categoryIds（如果还不存在）
-          const updatedCategoryIds = content.categoryIds.includes(targetCategory.id)
-            ? content.categoryIds
-            : [...content.categoryIds, targetCategory.id]
+          const currentCategoryIds = content.categoryIds || []
+          const updatedCategoryIds = currentCategoryIds.includes(targetCategory.id)
+            ? currentCategoryIds
+            : [...currentCategoryIds, targetCategory.id]
 
           await updateContent(id, {
             categoryIds: updatedCategoryIds
