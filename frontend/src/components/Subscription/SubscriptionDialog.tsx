@@ -466,7 +466,7 @@ export default function SubscriptionDialog({ open, onClose }: SubscriptionDialog
           </Typography>
 
           {/* 添加订阅 */}
-          <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+          <Box sx={{ mb: 3, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="subtitle2">
                 添加新订阅
@@ -599,7 +599,7 @@ export default function SubscriptionDialog({ open, onClose }: SubscriptionDialog
                     borderColor: 'divider',
                     borderRadius: 1,
                     mb: 1,
-                    bgcolor: sub.enabled ? 'background.paper' : 'grey.50',
+                    bgcolor: sub.enabled ? 'background.paper' : 'action.disabledBackground',
                     display: 'block',
                     p: 2
                   }}
