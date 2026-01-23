@@ -61,7 +61,7 @@ export async function createShare(
 export async function getSharedContent(shareId: string): Promise<GetShareResponse> {
   try {
     const response = await axios.get<GetShareResponse>(
-      `${API_BASE_URL}/share/${shareId}`,
+      `${API_BASE_URL}/share/get?id=${shareId}`,
       {
         timeout: 10000
       }
