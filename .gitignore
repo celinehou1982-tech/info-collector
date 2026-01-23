@@ -44,3 +44,5 @@ Thumbs.db
 
 # OCR training data (large files)
 backend/*.traineddata
+.vercel
+.env*.local

@@ -146,3 +146,55 @@ export interface AISummaryResponse {
   }
   error?: string
 }
+
+// 分享内容类型
+export interface SharedContent {
+  id: string
+  contentId: string
+  userName: string
+  content: Content
+  shareUrl: string
+  viewCount: number
+  likeCount: number
+  createdAt: number
+  expiresAt: number
+}
+
+// 推荐广场响应
+export interface ShareFeedResponse {
+  success: boolean
+  data?: {
+    items: SharedContent[]
+    total: number
+    page: number
+    limit: number
+    hasMore: boolean
+  }
+  error?: string
+}
+
+// 创建分享响应
+export interface CreateShareResponse {
+  success: boolean
+  data?: {
+    shareId: string
+    shareUrl: string
+  }
+  error?: string
+}
+
+// 获取分享响应
+export interface GetShareResponse {
+  success: boolean
+  data?: SharedContent
+  error?: string
+}
+
+// 点赞响应
+export interface LikeShareResponse {
+  success: boolean
+  data?: {
+    likeCount: number
+  }
+  error?: string
+}
