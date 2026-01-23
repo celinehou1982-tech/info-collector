@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const offset = (page - 1) * limit
 
     // 从有序集合获取最新的分享ID（按时间倒序）
-    const shareIds = await kv.zrevrange('share:feed', offset, offset + limit - 1)
+    const shareIds = await kv.zrange('share:feed', offset + limit - 1, offset, { rev: true })
 
     if (!shareIds || shareIds.length === 0) {
       return res.json({
@@ -38,26 +38,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // 批量获取分享数据
-    const pipeline = kv.pipeline()
+    const items = []
     for (const id of shareIds) {
-      pipeline.get(`share:${id}`)
-    }
-    const results = await pipeline.exec()
-
-    // 解析数据
-    const items = results
-      .map((result: any) => {
-        if (!result) return null
+      const shareDataStr = await kv.get<string>(`share:${id}`)
+      if (shareDataStr) {
         try {
-          return JSON.parse(result as string)
-        } catch {
-          return null
+          items.push(JSON.parse(shareDataStr))
+        } catch (e) {
+          console.error(`Failed to parse share data for ${id}:`, e)
         }
-      })
-      .filter(Boolean)
+      }
+    }
 
     // 获取总数
-    const total = await kv.zcard('share:feed')
+    const total = await kv.zcard('share:feed') || 0
 
     console.log(`推荐广场: 返回 ${items.length} 条，第 ${page} 页`)
 

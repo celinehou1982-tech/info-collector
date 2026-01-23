@@ -67,8 +67,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 添加到推荐列表（有序集合，按时间排序）
     await kv.zadd('share:feed', { score: now, member: shareId })
 
-    // 只保留最近1000条推荐
-    await kv.zremrangebyrank('share:feed', 0, -1001)
+    // 只保留最近1000条推荐 - 删除旧的
+    const total = await kv.zcard('share:feed')
+    if (total && total > 1000) {
+      await kv.zpopmin('share:feed', total - 1000)
+    }
 
     console.log(`分享创建成功: ${shareId}`)
 
