@@ -360,7 +360,6 @@ export default function ContentList() {
                     return (
                       <Chip
                         key={categoryId}
-                        icon={<FolderIcon />}
                         label={category.name}
                         size="small"
                         color="primary"

@@ -207,7 +207,6 @@ export default function ContentDetail() {
                 return (
                   <Chip
                     key={categoryId}
-                    icon={<FolderIcon />}
                     label={category.name}
                     size="small"
                     color="primary"
