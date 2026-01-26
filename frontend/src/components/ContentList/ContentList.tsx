@@ -24,7 +24,8 @@ import {
   PictureAsPdf as PdfIcon,
   Delete as DeleteIcon,
   SelectAll as SelectAllIcon,
-  Deselect as DeselectIcon
+  Deselect as DeselectIcon,
+  Folder as FolderIcon
 } from '@mui/icons-material'
 import { useContentStore } from '../../store/contentStore'
 import { useCategoryStore } from '../../store/categoryStore'
@@ -352,6 +353,22 @@ export default function ContentList() {
                 )}
 
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                  {/* 显示目录名称 */}
+                  {content.categoryIds?.map((categoryId) => {
+                    const category = categories.find(c => c.id === categoryId)
+                    if (!category) return null
+                    return (
+                      <Chip
+                        key={categoryId}
+                        icon={<FolderIcon />}
+                        label={category.name}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    )
+                  })}
+                  {/* 显示标签 */}
                   {content.tags.map((tag, index) => (
                     <Chip key={index} label={tag} size="small" />
                   ))}

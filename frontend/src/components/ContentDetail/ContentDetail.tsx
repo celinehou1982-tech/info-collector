@@ -22,10 +22,12 @@ import {
   Delete as DeleteIcon,
   AutoAwesome as AIIcon,
   PictureAsPdf as PdfIcon,
-  Share as ShareIcon
+  Share as ShareIcon,
+  Folder as FolderIcon
 } from '@mui/icons-material'
 import ReactMarkdown from 'react-markdown'
 import { useContentStore } from '../../store/contentStore'
+import { useCategoryStore } from '../../store/categoryStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { generateAISummary } from '../../services/ai'
 import { createShare } from '../../services/share'
@@ -33,6 +35,7 @@ import ContentEditDialog from './ContentEditDialog'
 
 export default function ContentDetail() {
   const { selectedContent, selectContent, deleteContent, updateContent } = useContentStore()
+  const { categories } = useCategoryStore()
   const { settings } = useSettingsStore()
   const [generating, setGenerating] = useState(false)
   const [sharing, setSharing] = useState(false)
@@ -193,10 +196,26 @@ export default function ContentDetail() {
           )}
         </Box>
 
-        {/* 标签 */}
-        {selectedContent.tags.length > 0 && (
+        {/* 目录和标签 */}
+        {(selectedContent.categoryIds.length > 0 || selectedContent.tags.length > 0) && (
           <Box sx={{ mb: 2 }}>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              {/* 显示目录名称 */}
+              {selectedContent.categoryIds.map((categoryId) => {
+                const category = categories.find(c => c.id === categoryId)
+                if (!category) return null
+                return (
+                  <Chip
+                    key={categoryId}
+                    icon={<FolderIcon />}
+                    label={category.name}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
+                )
+              })}
+              {/* 显示标签 */}
               {selectedContent.tags.map((tag, index) => (
                 <Chip key={index} label={tag} size="small" />
               ))}
