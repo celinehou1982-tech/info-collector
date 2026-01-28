@@ -34,8 +34,18 @@ export default function SortSelector() {
           </Box>
         }
         sx={{
+          // 使Select高度与Button一致
+          height: '30.75px',
           '& .MuiSelect-select': {
-            py: 0.75
+            py: 0.5,
+            pr: 3,
+            display: 'flex',
+            alignItems: 'center',
+            fontSize: '0.875rem', // 14px - 与Button small相同
+            lineHeight: 1.75
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'rgba(0, 0, 0, 0.23)'
           }
         }}
       >
