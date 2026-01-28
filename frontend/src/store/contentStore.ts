@@ -3,6 +3,40 @@ import { Content } from '../types'
 import { contentService } from '../services/storage'
 import { useCategoryStore } from './categoryStore'
 
+// 排序配置类型
+type SortField = 'createdAt' | 'updatedAt' | 'title'
+type SortOrder = 'asc' | 'desc'
+
+interface SortConfig {
+  field: SortField
+  order: SortOrder
+}
+
+// 默认排序配置：按创建时间降序
+const DEFAULT_SORT: SortConfig = {
+  field: 'createdAt',
+  order: 'desc'
+}
+
+// 从 localStorage 读取保存的排序配置
+const loadSortConfig = (): SortConfig => {
+  try {
+    const saved = localStorage.getItem('content-sort-config')
+    return saved ? JSON.parse(saved) : DEFAULT_SORT
+  } catch {
+    return DEFAULT_SORT
+  }
+}
+
+// 保存排序配置到 localStorage
+const saveSortConfig = (config: SortConfig) => {
+  try {
+    localStorage.setItem('content-sort-config', JSON.stringify(config))
+  } catch (error) {
+    console.error('Failed to save sort config:', error)
+  }
+}
+
 interface SearchFilters {
   searchText: string
   categoryIds: string[]
@@ -22,6 +56,7 @@ interface ContentState {
   loading: boolean
   error: string | null
   filters: SearchFilters
+  sortConfig: SortConfig
 
   // Actions
   loadContents: () => Promise<void>
@@ -45,6 +80,10 @@ interface ContentState {
   setDateRangeFilter: (range?: { start?: Date; end?: Date }) => void
   clearFilters: () => void
   applyFilters: () => void
+
+  // Sort
+  setSortConfig: (config: SortConfig) => void
+  applySorting: (contents: Content[]) => Content[]
 }
 
 export const useContentStore = create<ContentState>((set, get) => ({
@@ -61,6 +100,7 @@ export const useContentStore = create<ContentState>((set, get) => ({
     tags: [],
     dateRange: undefined
   },
+  sortConfig: loadSortConfig(),
 
   loadContents: async () => {
     set({ loading: true, error: null })
@@ -255,6 +295,42 @@ export const useContentStore = create<ContentState>((set, get) => ({
       })
     }
 
-    set({ filteredContents: filtered })
+    // 应用排序
+    const sorted = get().applySorting(filtered)
+    set({ filteredContents: sorted })
+  },
+
+  // 排序方法
+  setSortConfig: (config: SortConfig) => {
+    set({ sortConfig: config })
+    saveSortConfig(config)
+    get().applyFilters() // 重新应用筛选和排序
+  },
+
+  applySorting: (contents: Content[]) => {
+    const { sortConfig } = get()
+    const sorted = [...contents]
+
+    sorted.sort((a, b) => {
+      let compareValue = 0
+
+      switch (sortConfig.field) {
+        case 'createdAt':
+        case 'updatedAt':
+          compareValue = new Date(a[sortConfig.field]).getTime() -
+                        new Date(b[sortConfig.field]).getTime()
+          break
+        case 'title':
+          compareValue = a.title.localeCompare(b.title, 'zh-CN')
+          break
+      }
+
+      return sortConfig.order === 'asc' ? compareValue : -compareValue
+    })
+
+    return sorted
   }
 }))
+
+// 导出类型供组件使用
+export type { SortConfig, SortField, SortOrder }

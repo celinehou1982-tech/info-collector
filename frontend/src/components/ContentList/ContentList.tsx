@@ -30,6 +30,7 @@ import {
 import { useContentStore } from '../../store/contentStore'
 import { useCategoryStore } from '../../store/categoryStore'
 import { useState } from 'react'
+import SortSelector from './SortSelector'
 
 export default function ContentList() {
   const {
@@ -188,7 +189,11 @@ export default function ContentList() {
               : `所有内容 (${displayContents.length})`}
           </Typography>
           {displayContents.length > 0 && (
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              {/* 排序选择器 */}
+              <SortSelector />
+
+              {/* 批量操作按钮 */}
               {batchMode && (
                 <Button
                   variant="outlined"
