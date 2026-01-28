@@ -23,7 +23,7 @@ export default function SortSelector() {
   }
 
   return (
-    <FormControl size="small" sx={{ minWidth: 120 }}>
+    <FormControl size="small" sx={{ minWidth: 130 }}>
       <Select
         value={currentValue}
         onChange={(e) => handleChange(e.target.value)}
@@ -34,15 +34,15 @@ export default function SortSelector() {
           </Box>
         }
         sx={{
-          // 使Select高度与Button一致
-          height: '30.75px',
           '& .MuiSelect-select': {
-            py: 0.5,
-            pr: 3,
+            py: '6px',
+            px: 1.5,
+            pr: '32px !important', // 确保右侧有足够空间显示下拉箭头
             display: 'flex',
             alignItems: 'center',
-            fontSize: '0.875rem', // 14px - 与Button small相同
-            lineHeight: 1.75
+            fontSize: '0.875rem',
+            lineHeight: 1.75,
+            minHeight: 'auto'
           },
           '& .MuiOutlinedInput-notchedOutline': {
             borderColor: 'rgba(0, 0, 0, 0.23)'
