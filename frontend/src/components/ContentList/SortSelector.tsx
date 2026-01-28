@@ -1,5 +1,6 @@
-import { Select, MenuItem, FormControl, Box } from '@mui/material'
-import { Sort as SortIcon } from '@mui/icons-material'
+import { useState } from 'react'
+import { Button, Menu, MenuItem } from '@mui/material'
+import { Sort as SortIcon, KeyboardArrowDown as ArrowDownIcon } from '@mui/icons-material'
 import { useContentStore, type SortConfig } from '../../store/contentStore'
 
 // 排序选项配置
@@ -13,51 +14,60 @@ const SORT_OPTIONS: Array<{ field: SortConfig['field']; order: SortConfig['order
 
 export default function SortSelector() {
   const { sortConfig, setSortConfig } = useContentStore()
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
 
-  // 将当前配置转换为选择值
-  const currentValue = `${sortConfig.field}-${sortConfig.order}`
+  // 获取当前选中的排序选项
+  const currentOption = SORT_OPTIONS.find(
+    option => option.field === sortConfig.field && option.order === sortConfig.order
+  )
 
-  const handleChange = (value: string) => {
-    const [field, order] = value.split('-') as [SortConfig['field'], SortConfig['order']]
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleSelect = (field: SortConfig['field'], order: SortConfig['order']) => {
     setSortConfig({ field, order })
+    handleClose()
   }
 
   return (
-    <FormControl size="small" sx={{ minWidth: 130 }}>
-      <Select
-        value={currentValue}
-        onChange={(e) => handleChange(e.target.value)}
-        displayEmpty
-        startAdornment={
-          <Box sx={{ display: 'flex', alignItems: 'center', mr: 0.5 }}>
-            <SortIcon fontSize="small" />
-          </Box>
-        }
-        sx={{
-          '& .MuiSelect-select': {
-            py: '6px',
-            px: 1.5,
-            pr: '32px !important', // 确保右侧有足够空间显示下拉箭头
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: '0.875rem',
-            lineHeight: 1.75,
-            minHeight: 'auto'
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'rgba(0, 0, 0, 0.23)'
-          }
+    <>
+      <Button
+        variant="outlined"
+        size="small"
+        startIcon={<SortIcon />}
+        endIcon={<ArrowDownIcon />}
+        onClick={handleClick}
+        aria-controls={open ? 'sort-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
+      >
+        {currentOption?.label || '最新创建'}
+      </Button>
+      <Menu
+        id="sort-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        MenuListProps={{
+          'aria-labelledby': 'sort-button',
         }}
       >
         {SORT_OPTIONS.map(option => (
           <MenuItem
             key={`${option.field}-${option.order}`}
-            value={`${option.field}-${option.order}`}
+            selected={option.field === sortConfig.field && option.order === sortConfig.order}
+            onClick={() => handleSelect(option.field, option.order)}
           >
             {option.label}
           </MenuItem>
         ))}
-      </Select>
-    </FormControl>
+      </Menu>
+    </>
   )
 }
