@@ -46,6 +46,11 @@ interface SubscriptionDialogProps {
 // 预设的公司信息（包含 HN 热门博客）
 const PRESET_COMPANIES = [
   {
+    name: 'AK推荐',
+    rss: 'BUNDLE:HN_POPULAR_BLOGS', // 特殊标识，表示这是一个批量订阅
+    keywords: ['tech', 'blog', 'programming', 'ai', 'startup']
+  },
+  {
     name: 'HackerNews',
     rss: 'https://hnrss.org/frontpage',
     keywords: ['hackernews', 'technology', 'startup']
@@ -116,6 +121,7 @@ export default function SubscriptionDialog({ open, onClose }: SubscriptionDialog
     let name: string
     let company: string
     let rssUrl: string
+    let isBundleSubscription = false
 
     if (customMode) {
       // 自定义模式
@@ -137,9 +143,12 @@ export default function SubscriptionDialog({ open, onClose }: SubscriptionDialog
       const presetCompany = PRESET_COMPANIES.find(c => c.name === selectedCompany)
       if (!presetCompany) return
 
-      name = `${presetCompany.name} News`
+      name = `${presetCompany.name}`
       company = presetCompany.name
       rssUrl = presetCompany.rss
+
+      // 检查是否是批量订阅（AK推荐）
+      isBundleSubscription = rssUrl.startsWith('BUNDLE:')
     }
 
     try {
@@ -147,39 +156,38 @@ export default function SubscriptionDialog({ open, onClose }: SubscriptionDialog
       const existingSubscription = subscriptions.find(sub => sub.company === company)
 
       if (existingSubscription) {
-        // 如果存在，检查是否已有相同的RSS源
-        const sourceExists = existingSubscription.sources.some(source => source.url === rssUrl)
+        setSnackbar({
+          open: true,
+          message: `${company} 订阅已存在`,
+          severity: 'warning'
+        })
+        return
+      }
 
-        if (sourceExists) {
-          setSnackbar({
-            open: true,
-            message: `${company} 的该RSS源已存在`,
-            severity: 'warning'
-          })
-          return
-        }
+      // 处理批量订阅（AK推荐）
+      if (isBundleSubscription) {
+        const bundleSources = HN_POPULAR_BLOGS.map(blog => ({
+          type: 'rss' as const,
+          url: blog.rss,
+          enabled: true
+        }))
 
-        // 添加新的RSS源到现有订阅
-        const updatedSources = [
-          ...existingSubscription.sources,
-          {
-            type: 'rss' as const,
-            url: rssUrl,
-            enabled: true
-          }
-        ]
-
-        await subscriptionService.updateSubscription(existingSubscription.id, {
-          sources: updatedSources
+        await subscriptionService.createSubscription({
+          name,
+          company,
+          sources: bundleSources,
+          keywords: ['tech', 'blog', 'programming', 'ai', 'startup'],
+          enabled: true,
+          frequency
         })
 
         setSnackbar({
           open: true,
-          message: `已将新RSS源添加到 ${company} 订阅`,
+          message: `已添加 ${company} 订阅（包含 ${HN_POPULAR_BLOGS.length} 个优质技术博客）`,
           severity: 'success'
         })
       } else {
-        // 不存在则创建新订阅
+        // 普通单源订阅
         await subscriptionService.createSubscription({
           name,
           company,
