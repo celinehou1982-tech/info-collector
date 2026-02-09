@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:3001'
+// 统一使用相对路径，开发环境通过 Vite 代理到本地后端
+const API_BASE_URL = '/api'
 
 export interface OCRRequest {
   imageBase64: string
@@ -23,7 +24,7 @@ export interface OCRResult {
  */
 export async function recognizeImage(req: OCRRequest): Promise<OCRResult> {
   try {
-    const response = await axios.post<OCRResult>(`${API_BASE_URL}/api/ocr`, req)
+    const response = await axios.post<OCRResult>(`${API_BASE_URL}/ocr`, req)
     return response.data
   } catch (error) {
     console.error('OCR识别失败:', error)

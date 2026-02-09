@@ -1,9 +1,7 @@
 import axios from 'axios'
 
-// 根据环境选择API地址
-const API_BASE_URL = import.meta.env.PROD
-  ? '/api' // 生产环境使用Vercel API
-  : 'http://localhost:3001/api' // 开发环境使用本地后端
+// 统一使用相对路径，开发环境通过 Vite 代理到本地后端
+const API_BASE_URL = '/api'
 
 export interface ScrapeResponse {
   success: boolean

@@ -4,9 +4,8 @@ import { contentService } from './storage'
 import { scrapeUrl } from './scraper'
 import type { Subscription } from '../types'
 
-const API_BASE_URL = import.meta.env.PROD
-  ? '/api'
-  : 'http://localhost:3001/api'
+// 统一使用相对路径，开发环境通过 Vite 代理到本地后端
+const API_BASE_URL = '/api'
 
 export interface RSSItem {
   title: string

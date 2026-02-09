@@ -1,10 +1,8 @@
 import axios from 'axios'
 import { AISummaryResponse } from '../types'
 
-// 在生产环境和开发环境都使用相对API路径
-const API_BASE_URL = import.meta.env.PROD
-  ? '/api'
-  : 'http://localhost:3001/api'
+// 统一使用相对路径，开发环境通过 Vite 代理到本地后端
+const API_BASE_URL = '/api'
 
 export interface GenerateSummaryRequest {
   content: string

@@ -6,7 +6,16 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    host: true // 允许局域网访问，方便手机测试
+    host: true, // 允许局域网访问，方便手机测试
+    proxy: {
+      // 代理所有 /api 请求到后端服务
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path
+      }
+    }
   },
   build: {
     outDir: 'dist',

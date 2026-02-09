@@ -7,9 +7,11 @@ import type {
   LikeShareResponse
 } from '../types'
 
+// Share API 在开发环境不可用（需要Vercel KV），使用生产环境API
+// 其他API通过Vite代理到本地后端
 const API_BASE_URL = import.meta.env.PROD
   ? '/api'
-  : 'http://localhost:3001/api'
+  : 'https://catch4you.vercel.app/api'  // 开发环境使用生产API
 
 /**
  * 创建分享
