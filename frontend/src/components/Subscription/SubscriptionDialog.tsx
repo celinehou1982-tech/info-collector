@@ -36,13 +36,14 @@ import {
 import { Subscription, SubscriptionSource } from '../../types'
 import { subscriptionService } from '../../services/subscription'
 import { fetchSubscriptionContent, fetchAllSubscriptions } from '../../services/rssFetcher'
+import { HN_POPULAR_BLOGS } from '../../data/hnPopularBlogs'
 
 interface SubscriptionDialogProps {
   open: boolean
   onClose: () => void
 }
 
-// 预设的公司信息
+// 预设的公司信息（包含 HN 热门博客）
 const PRESET_COMPANIES = [
   {
     name: 'HackerNews',
@@ -58,7 +59,9 @@ const PRESET_COMPANIES = [
     name: 'Wired',
     rss: 'https://www.wired.com/feed/rss',
     keywords: ['wired', 'technology', 'science']
-  }
+  },
+  // Add all HN popular blogs
+  ...HN_POPULAR_BLOGS
 ]
 
 export default function SubscriptionDialog({ open, onClose }: SubscriptionDialogProps) {
