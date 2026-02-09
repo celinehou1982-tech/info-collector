@@ -43,11 +43,11 @@ interface SubscriptionDialogProps {
   onClose: () => void
 }
 
-// 预设的公司信息（包含 HN 热门博客）
+// 预设的公司信息（不包含单独的 HN 博客，统一使用 AK推荐 打包订阅）
 const PRESET_COMPANIES = [
   {
     name: 'AK推荐',
-    rss: 'BUNDLE:HN_POPULAR_BLOGS', // 特殊标识，表示这是一个批量订阅
+    rss: 'BUNDLE:HN_POPULAR_BLOGS', // 特殊标识，表示这是一个批量订阅（包含92个HN热门博客）
     keywords: ['tech', 'blog', 'programming', 'ai', 'startup']
   },
   {
@@ -64,9 +64,7 @@ const PRESET_COMPANIES = [
     name: 'Wired',
     rss: 'https://www.wired.com/feed/rss',
     keywords: ['wired', 'technology', 'science']
-  },
-  // Add all HN popular blogs
-  ...HN_POPULAR_BLOGS
+  }
 ]
 
 export default function SubscriptionDialog({ open, onClose }: SubscriptionDialogProps) {
